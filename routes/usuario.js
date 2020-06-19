@@ -7,6 +7,7 @@ var mdAutenticacion = require('../middlewares/autenticacion');
 // var SEED = require('../config/config').SEED;
 
 var Usuario = require('../models/usuario');
+const { count } = require('../models/usuario');
 
 
 // ==========================
@@ -14,7 +15,12 @@ var Usuario = require('../models/usuario');
 // ==========================
 app.get('/', (req, res, next) => {
 
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
+
     Usuario.find({}, 'nombre email img role') // Escojo los campos que quiero
+        .skip(desde)
+        .limit(5)
         .exec(
             (err, usuarios) => {
                 if (err) {
@@ -24,11 +30,17 @@ app.get('/', (req, res, next) => {
                         errors: err
                     });
                 }
-                res.status(200).json({
+
+                Usuario.count({}, (err, conteo) =>{ //Para contar los usuarios
+                      res.status(200).json({
                     ok: true,
-                    usuarios: usuarios
+                    usuarios: usuarios,
+                    total: conteo
                 });
 
+                })
+
+              
             });
 });
 
